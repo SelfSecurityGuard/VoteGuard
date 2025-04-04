@@ -128,14 +128,13 @@ contract VotingPlatform {
 */
 
 export const FACTORY_ABI = [
-    {
-      inputs: [{ internalType: "string[]", name: "options", type: "string[]" }],
-      name: "createVote",
-      outputs: [{ internalType: "address", name: "", type: "address" }],
-      stateMutability: "nonpayable",
-      type: "function",
-    },
-  ]
-  
-  export const FACTORY_ADDRESS = "0xA72b7c9c2101AaAC57d86cDEBc490CA53Bca4A33"
-  
+  {
+    name: "createVote",
+    type: "function",
+    inputs: [{ internalType: "string[]", name: "options", type: "string[]" }],
+    outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "nonpayable",
+  },
+]
+
+export const FACTORY_ADDRESS = "0xA72b7c9c2101AaAC57d86cDEBc490CA53Bca4A33"
