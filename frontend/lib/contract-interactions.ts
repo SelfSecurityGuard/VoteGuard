@@ -155,7 +155,24 @@ export async function castVote(pollId: string, optionIndex: number): Promise<str
   return "0x" + Math.random().toString(16).substring(2, 42)
 }
 
-export async function createVote(options: string[]): Promise<string> {
+export interface SelfVerificationConfig {
+  identityVerificationHub: string
+  scope: number
+  attestationId: number
+  olderThanEnabled: boolean
+  olderThan: number
+  forbiddenCountriesEnabled: boolean
+  forbiddenCountriesListPacked: [bigint, bigint, bigint, bigint]
+  ofacEnabled: [boolean, boolean, boolean]
+}
+
+export async function createVote(
+  title: string,
+  description: string,
+  endTime: number,
+  options: string[],
+  config: SelfVerificationConfig
+): Promise<string> {
   if (!window.ethereum) throw new Error("Please install the wallet expansion package first")
 
   try {
@@ -172,7 +189,7 @@ export async function createVote(options: string[]): Promise<string> {
 
     console.log("📤 Sending createVote transaction...", options)
 
-    const tx = await contract.createVote(options)
+    const tx = await contract.createVote(title, description, endTime, options, config)
     const receipt = await tx.wait()
 
     const event = receipt.logs.find(

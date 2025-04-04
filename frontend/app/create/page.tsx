@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { useWallet } from "@/hooks/use-wallet"
 import { createPoll, createVote } from "@/lib/contract-interactions"
 import { toast } from "@/components/ui/use-toast"
+import { hashEndpointWithScope } from "@selfxyz/core";
 import Link from "next/link"
 
 export default function CreatePoll() {
@@ -29,6 +30,12 @@ export default function CreatePoll() {
   const [requireNationality, setRequireNationality] = useState(false)
   const [requireAge, setRequireAge] = useState(false)
   const [minimumAge, setMinimumAge] = useState(18)
+
+  const backendEndpoint = ''
+  // testnet
+  const identityVerificationHub = "0xD961B67B35739cCF16326B087C9aD2c0095cCc4E"
+  // mainnet
+  // const identityVerificationHub = "0x77117D60eaB7C044e785D68edB6C7E0e134970Ea"
 
   const addOption = () => {
     setOptions([...options, ""])
@@ -80,7 +87,21 @@ export default function CreatePoll() {
         age: requireAge ? minimumAge : null,
       }
 
-      const voteAddress = await createVote(options)
+      const scope = `${title}-${Date.now()}`.slice(0, 25)
+      const hashedScope = Number(hashEndpointWithScope(backendEndpoint, scope)) 
+
+      const config = {
+        identityVerificationHub,
+        scope: hashedScope,
+        attestationId: 1,
+        olderThanEnabled: false,
+        olderThan: 0,
+        forbiddenCountriesEnabled: false,
+        forbiddenCountriesListPacked: [BigInt(0), BigInt(0), BigInt(0), BigInt(0)] as [bigint, bigint, bigint, bigint],
+        ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
+      }
+
+      const voteAddress = await createVote(title, description, endTimestamp, options, config)
 
       toast({
         title: "Poll created!",
