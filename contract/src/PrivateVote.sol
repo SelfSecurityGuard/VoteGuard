@@ -76,4 +76,8 @@ contract PrivateVote {
     function getAllCandidates() external view returns (string[] memory) {
         return candidates;
     }
+
+    function getVoteCount(string memory candidate) external view returns (uint256) {
+        return votesReceived[candidate];
+    }
 }
