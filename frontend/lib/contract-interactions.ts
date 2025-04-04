@@ -171,6 +171,7 @@ export async function createVote(
   description: string,
   endTime: number,
   options: string[],
+  scope: string,
   config: SelfVerificationConfig
 ): Promise<string> {
   if (!window.ethereum) throw new Error("Please install the wallet expansion package first")
@@ -189,7 +190,7 @@ export async function createVote(
 
     console.log("📤 Sending createVote transaction...", options)
 
-    const tx = await contract.createVote(title, description, endTime, options, config)
+    const tx = await contract.createVote(title, description, endTime, options, scope, config)
     const receipt = await tx.wait()
 
     const event = receipt.logs.find(

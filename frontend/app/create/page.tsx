@@ -88,7 +88,7 @@ export default function CreatePoll() {
       }
 
       const scope = `${title}-${Date.now()}`.slice(0, 25)
-      const hashedScope = Number(hashEndpointWithScope(backendEndpoint, scope)) 
+      const hashedScope = Number(hashEndpointWithScope(backendEndpoint, scope))
 
       const config = {
         identityVerificationHub,
@@ -101,7 +101,7 @@ export default function CreatePoll() {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       }
 
-      const voteAddress = await createVote(title, description, endTimestamp, options, config)
+      const voteAddress = await createVote(title, description, endTimestamp, options, scope, config)
 
       toast({
         title: "Poll created!",
