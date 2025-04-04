@@ -1,5 +1,7 @@
 // This file would contain the actual contract interactions
 // For now, we'll use mock data for demonstration purposes
+import { ethers, Log } from "ethers"
+import { FACTORY_ABI, FACTORY_ADDRESS } from "./smart-contract"
 
 interface Poll {
   id: string
@@ -102,3 +104,42 @@ export async function castVote(pollId: string, optionIndex: number): Promise<str
   return "0x" + Math.random().toString(16).substring(2, 42)
 }
 
+export async function createVote(options: string[]): Promise<string> {
+  if (!window.ethereum) throw new Error("請先安裝錢包擴充套件")
+
+  try {
+    // 檢查是否已連線
+    let accounts = await window.ethereum.request({ method: "eth_accounts" })
+    if (accounts.length === 0) {
+      // 使用者取消授權時會在這裡丟出錯誤
+      accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
+    }
+
+    const provider = new ethers.BrowserProvider(window.ethereum)
+    const signer = await provider.getSigner()
+    const contract = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer)
+
+    console.log("📤 發送 createVote 交易中...", options)
+
+    const tx = await contract.createVote(options)
+    const receipt = await tx.wait()
+
+    const event = receipt.logs.find(
+      (log: Log) => log?.address?.toLowerCase() === FACTORY_ADDRESS.toLowerCase()
+    )
+
+    const voteAddress = event?.args?.voteAddress ?? "（需透過 interface decode）"
+
+    console.log("✅ 新投票合約地址：", voteAddress)
+
+    return voteAddress
+  } catch (err: any) {
+    if (err.code === 4001) {
+      console.warn("🛑 使用者取消錢包授權")
+    } else {
+      console.error("❌ 發生其他錯誤：", err)
+    }
+
+    throw new Error("使用者未完成錢包授權，無法建立投票")
+  }
+}
