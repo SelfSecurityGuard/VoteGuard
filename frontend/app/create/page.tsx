@@ -12,7 +12,7 @@ import { DatePicker } from "@/components/date-picker"
 import { PlusCircle, MinusCircle, Save, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useWallet } from "@/hooks/use-wallet"
-import { createPoll, createVote } from "@/lib/contract-interactions"
+import { createVote, SelfVerificationConfig } from "@/lib/contract-interactions"
 import { toast } from "@/components/ui/use-toast"
 import { hashEndpointWithScope } from "@selfxyz/core";
 import Link from "next/link"
@@ -88,9 +88,9 @@ export default function CreatePoll() {
       }
 
       const scope = `${title}-${Date.now()}`.slice(0, 25)
-      const hashedScope = Number(hashEndpointWithScope(backendEndpoint, scope))
+      const hashedScope = hashEndpointWithScope(backendEndpoint, scope)
 
-      const config = {
+      const config: SelfVerificationConfig = {
         identityVerificationHub,
         scope: hashedScope,
         attestationId: 1,

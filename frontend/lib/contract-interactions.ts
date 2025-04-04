@@ -157,7 +157,7 @@ export async function castVote(pollId: string, optionIndex: number): Promise<str
 
 export interface SelfVerificationConfig {
   identityVerificationHub: string
-  scope: number
+  scope: string
   attestationId: number
   olderThanEnabled: boolean
   olderThan: number
