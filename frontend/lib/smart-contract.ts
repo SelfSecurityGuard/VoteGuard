@@ -134,7 +134,23 @@ export const FACTORY_ABI = [
     inputs: [{ internalType: "string[]", name: "options", type: "string[]" }],
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "nonpayable",
-  },
+  }, {
+    name: "getAllVotes",
+    type: "function",
+    inputs: [],
+    outputs: [{ "type": "address[]", "name": "" }],
+    stateMutability: "view"
+  }
 ]
 
 export const FACTORY_ADDRESS = "0xA72b7c9c2101AaAC57d86cDEBc490CA53Bca4A33"
+
+export const VOTE_ABI = [
+  { type: "function", name: "title", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+  { type: "function", name: "description", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+  { type: "function", name: "getOptions", inputs: [], outputs: [{ type: "string[]" }], stateMutability: "view" },
+  { type: "function", name: "getVotes", inputs: [], outputs: [{ type: "uint256[]" }], stateMutability: "view" },
+  { type: "function", name: "totalVotes", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "endTime", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "creator", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
+]
