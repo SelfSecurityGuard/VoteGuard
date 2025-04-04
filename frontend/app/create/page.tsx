@@ -12,7 +12,7 @@ import { DatePicker } from "@/components/date-picker"
 import { PlusCircle, MinusCircle, Save, ArrowLeft } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useWallet } from "@/hooks/use-wallet"
-import { createPoll } from "@/lib/contract-interactions"
+import { createPoll, createVote } from "@/lib/contract-interactions"
 import { toast } from "@/components/ui/use-toast"
 import Link from "next/link"
 
@@ -80,7 +80,7 @@ export default function CreatePoll() {
         age: requireAge ? minimumAge : null,
       }
 
-      await createPoll(title, description, options, endTimestamp, eligibilityRequirements)
+      const voteAddress = await createVote(options)
 
       toast({
         title: "Poll created!",
