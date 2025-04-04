@@ -10,11 +10,11 @@ import { ChevronLeft, ChevronRight, Blocks, Vote } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 
 interface Poll {
-  id: string
   title: string
   description: string
-  endTime: number
   totalVotes: number
+  endTime: number
+  address: string
 }
 
 export default function ActivePolls() {
@@ -96,7 +96,7 @@ export default function ActivePolls() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {paginatedPolls.map((poll) => (
           <Card
-            key={poll.id}
+            key={poll.address}
             className="border border-primary/20 bg-black/5 backdrop-blur-sm hover:border-primary/40 transition-all"
           >
             <CardHeader>
