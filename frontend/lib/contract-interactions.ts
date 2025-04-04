@@ -19,6 +19,7 @@ interface ActivePoll {
   description: string
   totalVotes: number
   endTime: number
+  address: string
 }
 
 // Mock data
@@ -64,17 +65,17 @@ const mockPolls: Poll[] = [
 //   return mockPolls.filter((poll) => poll.endTime > currentTime)
 // }
 
-export async function getActivePolls(): Promise<Poll[]> {
+export async function getActivePolls(): Promise<ActivePoll[]> {
   if (!window.ethereum) throw new Error("Please install the wallet expansion package first.")
 
   const provider = new ethers.BrowserProvider(window.ethereum)
   const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, provider)
-  const voteAddresses: string[] = await factory.getAllVotes()
+  const votes: string[] = await factory.getAllVotes()
 
   const polls = await Promise.all(
-    voteAddresses.map(async (addr) => {
+    votes.map(async ({ "0": address, "1": scope }) => {
       try {
-        const vote = new ethers.Contract(addr, VOTE_ABI, provider)
+        const vote = new ethers.Contract(address, VOTE_ABI, provider)
         const [
           title,
           description,
@@ -97,15 +98,16 @@ export async function getActivePolls(): Promise<Poll[]> {
           description,
           totalVotes: Number(totalVotes),
           endTime: Number(endTime),
+          address
         } satisfies ActivePoll
       } catch (err) {
-        console.warn(`❌ Unable to read contract ${addr}：`, err)
+        console.warn(`❌ Unable to read contract ${address}：`, err)
         return null
       }
     })
   )
 
-  return polls.filter((p): p is Poll => !!p)
+  return polls.filter((p): p is ActivePoll => !!p)
 }
 
 // Mock function to get a specific poll
