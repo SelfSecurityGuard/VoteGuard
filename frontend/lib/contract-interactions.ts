@@ -81,10 +81,10 @@ export async function getActivePolls(): Promise<Poll[]> {
           totalVotes,
           endTime,
         ] = await Promise.all([
-          vote.title(),
-          vote.description(),
-          vote.totalVotes(),
-          vote.endTime(),
+          vote.getTitle(),
+          vote.getDescription(),
+          vote.getTotalVotes(),
+          vote.getEndTime(),
         ])
 
         const now = Math.floor(Date.now() / 1000)
