@@ -1,7 +1,7 @@
 // This file would contain the actual contract interactions
 // For now, we'll use mock data for demonstration purposes
 import { ethers, Log } from "ethers"
-import { FACTORY_ABI, FACTORY_ADDRESS } from "./smart-contract"
+import { FACTORY_ABI, FACTORY_ADDRESS, VOTE_ABI } from "./smart-contract"
 
 interface Poll {
   id: string
@@ -12,6 +12,13 @@ interface Poll {
   totalVotes: number
   endTime: number
   creator: string
+}
+
+interface ActivePoll {
+  title: string
+  description: string
+  totalVotes: number
+  endTime: number
 }
 
 // Mock data
@@ -49,12 +56,56 @@ const mockPolls: Poll[] = [
 ]
 
 // Mock function to get active polls
-export async function getActivePolls(): Promise<Poll[]> {
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000))
+// export async function getActivePolls(): Promise<Poll[]> {
+//   // Simulate API delay
+//   await new Promise((resolve) => setTimeout(resolve, 1000))
 
-  const currentTime = Math.floor(Date.now() / 1000)
-  return mockPolls.filter((poll) => poll.endTime > currentTime)
+//   const currentTime = Math.floor(Date.now() / 1000)
+//   return mockPolls.filter((poll) => poll.endTime > currentTime)
+// }
+
+export async function getActivePolls(): Promise<Poll[]> {
+  if (!window.ethereum) throw new Error("Please install the wallet expansion package first.")
+
+  const provider = new ethers.BrowserProvider(window.ethereum)
+  const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, provider)
+  const voteAddresses: string[] = await factory.getAllVotes()
+
+  const polls = await Promise.all(
+    voteAddresses.map(async (addr) => {
+      try {
+        const vote = new ethers.Contract(addr, VOTE_ABI, provider)
+        const [
+          title,
+          description,
+          totalVotes,
+          endTime,
+        ] = await Promise.all([
+          vote.title(),
+          vote.description(),
+          vote.totalVotes(),
+          vote.endTime(),
+        ])
+
+        const now = Math.floor(Date.now() / 1000)
+        const isActive = Number(endTime) > now
+
+        if (!isActive) return null
+
+        return {
+          title,
+          description,
+          totalVotes: Number(totalVotes),
+          endTime: Number(endTime),
+        } satisfies ActivePoll
+      } catch (err) {
+        console.warn(`❌ Unable to read contract ${addr}：`, err)
+        return null
+      }
+    })
+  )
+
+  return polls.filter((p): p is Poll => !!p)
 }
 
 // Mock function to get a specific poll
