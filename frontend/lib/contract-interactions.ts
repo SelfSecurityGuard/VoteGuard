@@ -105,13 +105,13 @@ export async function castVote(pollId: string, optionIndex: number): Promise<str
 }
 
 export async function createVote(options: string[]): Promise<string> {
-  if (!window.ethereum) throw new Error("請先安裝錢包擴充套件")
+  if (!window.ethereum) throw new Error("Please install the wallet expansion package first")
 
   try {
-    // 檢查是否已連線
+    // Check if you are connected
     let accounts = await window.ethereum.request({ method: "eth_accounts" })
     if (accounts.length === 0) {
-      // 使用者取消授權時會在這裡丟出錯誤
+      // When the user cancels authorization, an error will be thrown here
       accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
     }
 
@@ -119,7 +119,7 @@ export async function createVote(options: string[]): Promise<string> {
     const signer = await provider.getSigner()
     const contract = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, signer)
 
-    console.log("📤 發送 createVote 交易中...", options)
+    console.log("📤 Sending createVote transaction...", options)
 
     const tx = await contract.createVote(options)
     const receipt = await tx.wait()
@@ -128,18 +128,18 @@ export async function createVote(options: string[]): Promise<string> {
       (log: Log) => log?.address?.toLowerCase() === FACTORY_ADDRESS.toLowerCase()
     )
 
-    const voteAddress = event?.args?.voteAddress ?? "（需透過 interface decode）"
+    const voteAddress = event?.args?.voteAddress ?? "(need to use interface decode)"
 
-    console.log("✅ 新投票合約地址：", voteAddress)
+    console.log("✅ New voting contract address:", voteAddress)
 
     return voteAddress
   } catch (err: any) {
     if (err.code === 4001) {
-      console.warn("🛑 使用者取消錢包授權")
+      console.warn("🛑 User canceled wallet authorization")
     } else {
-      console.error("❌ 發生其他錯誤：", err)
+      console.error("❌ Other errors occurred:", err)
     }
 
-    throw new Error("使用者未完成錢包授權，無法建立投票")
+    throw new Error("The user has not completed the wallet authorization and cannot create a vote.")
   }
 }
