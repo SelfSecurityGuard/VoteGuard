@@ -128,29 +128,154 @@ contract VotingPlatform {
 */
 
 export const FACTORY_ABI = [
-  {
-    name: "createVote",
-    type: "function",
-    inputs: [{ internalType: "string[]", name: "options", type: "string[]" }],
-    outputs: [{ internalType: "address", name: "", type: "address" }],
-    stateMutability: "nonpayable",
-  }, {
-    name: "getAllVotes",
-    type: "function",
-    inputs: [],
-    outputs: [{ "type": "address[]", "name": "" }],
-    stateMutability: "view"
-  }
-]
+    {
+      type: "constructor",
+      inputs: [],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "allVotes",
+      inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+      outputs: [{ name: "", type: "address", internalType: "address" }],
+      stateMutability: "view",
+    },
+    {
+      type: "function",
+      name: "createVote",
+      inputs: [
+        { name: "title", type: "string", internalType: "string" },
+        { name: "description", type: "string", internalType: "string" },
+        { name: "endTime", type: "uint256", internalType: "uint256" },
+        { name: "options", type: "string[]", internalType: "string[]" },
+        {
+          name: "config",
+          type: "tuple",
+          internalType: "struct SelfVerificationConfig",
+          components: [
+            { name: "identityVerificationHub", type: "address", internalType: "address" },
+            { name: "scope", type: "uint256", internalType: "uint256" },
+            { name: "attestationId", type: "uint256", internalType: "uint256" },
+            { name: "olderThanEnabled", type: "bool", internalType: "bool" },
+            { name: "olderThan", type: "uint256", internalType: "uint256" },
+            { name: "forbiddenCountriesEnabled", type: "bool", internalType: "bool" },
+            { name: "forbiddenCountriesListPacked", type: "uint256[4]", internalType: "uint256[4]" },
+            { name: "ofacEnabled", type: "bool[3]", internalType: "bool[3]" },
+          ],
+        },
+      ],
+      outputs: [{ name: "", type: "address", internalType: "address" }],
+      stateMutability: "nonpayable",
+    },
+    {
+      type: "function",
+      name: "getAllVotes",
+      inputs: [],
+      outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
+      stateMutability: "view",
+    },
+    {
+      type: "event",
+      name: "VoteCreated",
+      inputs: [
+        { name: "creator", type: "address", indexed: true, internalType: "address" },
+        { name: "voteAddress", type: "address", indexed: false, internalType: "address" },
+      ],
+      anonymous: false,
+    },
+  ]
+  
 
 export const FACTORY_ADDRESS = "0xA72b7c9c2101AaAC57d86cDEBc490CA53Bca4A33"
 
 export const VOTE_ABI = [
-  { type: "function", name: "title", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
-  { type: "function", name: "description", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
-  { type: "function", name: "getOptions", inputs: [], outputs: [{ type: "string[]" }], stateMutability: "view" },
-  { type: "function", name: "getVotes", inputs: [], outputs: [{ type: "uint256[]" }], stateMutability: "view" },
-  { type: "function", name: "totalVotes", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "endTime", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
-  { type: "function", name: "creator", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
-]
+    {
+      type: "constructor",
+      inputs: [
+        { name: "_title", type: "string" },
+        { name: "_description", type: "string" },
+        { name: "_endTime", type: "uint256" },
+        { name: "_options", type: "string[]" },
+        { name: "_admin", type: "address" },
+        {
+          name: "_config",
+          type: "tuple",
+          components: [
+            { name: "identityVerificationHub", type: "address" },
+            { name: "scope", type: "uint256" },
+            { name: "attestationId", type: "uint256" },
+            { name: "olderThanEnabled", type: "bool" },
+            { name: "olderThan", type: "uint256" },
+            { name: "forbiddenCountriesEnabled", type: "bool" },
+            { name: "forbiddenCountriesListPacked", type: "uint256[4]" },
+            { name: "ofacEnabled", type: "bool[3]" },
+          ]
+        }
+      ],
+      stateMutability: "nonpayable"
+    },
+    { type: "function", name: "title", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+    { type: "function", name: "description", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+    { type: "function", name: "endTime", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+    { type: "function", name: "getAllOptions", inputs: [], outputs: [{ type: "string[]" }], stateMutability: "view" },
+    { type: "function", name: "getCreator", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
+    { type: "function", name: "getDescription", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+    { type: "function", name: "getEndTime", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+    { type: "function", name: "getTitle", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+    { type: "function", name: "getTotalVotes", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+    { type: "function", name: "getVotes", inputs: [{ name: "option", type: "string" }], outputs: [{ type: "uint256" }], stateMutability: "view" },
+    { type: "function", name: "getWinner", inputs: [], outputs: [{ name: "winner", type: "string" }], stateMutability: "view" },
+    { type: "function", name: "isVotingOpen", inputs: [], outputs: [{ type: "bool" }], stateMutability: "view" },
+    { type: "function", name: "startVoting", inputs: [], outputs: [], stateMutability: "nonpayable" },
+    { type: "function", name: "endVoting", inputs: [], outputs: [], stateMutability: "nonpayable" },
+    { type: "function", name: "admin", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
+    { type: "function", name: "totalVotes", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+    {
+      type: "function",
+      name: "verifySelfProof",
+      inputs: [
+        {
+          name: "proof",
+          type: "tuple",
+          components: [
+            { name: "a", type: "uint256[2]" },
+            { name: "b", type: "uint256[2][2]" },
+            { name: "c", type: "uint256[2]" },
+            { name: "pubSignals", type: "uint256[21]" }
+          ]
+        }
+      ],
+      outputs: [],
+      stateMutability: "nonpayable"
+    },
+    {
+      type: "function",
+      name: "vote",
+      inputs: [
+        { name: "option", type: "string" },
+        {
+          name: "proof",
+          type: "tuple",
+          components: [
+            { name: "a", type: "uint256[2]" },
+            { name: "b", type: "uint256[2][2]" },
+            { name: "c", type: "uint256[2]" },
+            { name: "pubSignals", type: "uint256[21]" }
+          ]
+        }
+      ],
+      outputs: [],
+      stateMutability: "nonpayable"
+    },
+    {
+      type: "function",
+      name: "votesReceived",
+      inputs: [{ name: "", type: "string" }],
+      outputs: [{ type: "uint256" }],
+      stateMutability: "view"
+    },
+    { type: "error", name: "InvalidAttestationId", inputs: [] },
+    { type: "error", name: "InvalidScope", inputs: [] },
+    { type: "error", name: "RegisteredNullifier", inputs: [] }
+  ]
+  
