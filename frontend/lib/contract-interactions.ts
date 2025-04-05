@@ -6,6 +6,7 @@ import { FACTORY_ABI, FACTORY_ADDRESS, VOTE_ABI } from "./smart-contract"
 interface Poll {
   address: string
   title: string
+  scope: string
   description: string
   options: string[]
   votes: number[]
@@ -132,6 +133,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
     const vote = new ethers.Contract(voteAddress, VOTE_ABI, provider)
     const [
       title,
+      scope,
       description,
       options,
       totalVotes,
@@ -139,6 +141,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       creator
     ] = await Promise.all([
       vote.getTitle(),
+      vote.getScope(),
       vote.getDescription(),
       vote.getAllOptions(),
       vote.getTotalVotes(),
@@ -160,6 +163,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
     })
     return {
       address: voteAddress,
+      scope,
       title,
       description,
       options,

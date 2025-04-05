@@ -17,6 +17,7 @@ import { useRouter } from "next/navigation"
 interface Poll {
   address: string
   title: string
+  scope: string
   description: string
   options: string[]
   votes: number[]
