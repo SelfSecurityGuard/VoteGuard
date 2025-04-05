@@ -70,10 +70,10 @@ export async function getActivePolls(): Promise<ActivePoll[]> {
 
   const provider = new ethers.BrowserProvider(window.ethereum)
   const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, provider)
-  const votes: string[] = await factory.getAllVotes()
+  const voteAddresses: string[] = await factory.getAllVotes()
 
   const polls = await Promise.all(
-    votes.map(async ({ "0": address, "1": scope }) => {
+    voteAddresses.map(async (address) => {
       try {
         const vote = new ethers.Contract(address, VOTE_ABI, provider)
         const [

@@ -137,10 +137,7 @@ export const FACTORY_ABI = [
     type: "function",
     name: "allVotes",
     inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    outputs: [
-      { name: "voteAddress", type: "address", internalType: "address" },
-      { name: "scope", type: "string", internalType: "string" },
-    ],
+    outputs: [{ name: "voteAddress", type: "address[]", internalType: "address[]" }],
     stateMutability: "view",
   },
   {
@@ -175,17 +172,7 @@ export const FACTORY_ABI = [
     type: "function",
     name: "getAllVotes",
     inputs: [],
-    outputs: [
-      {
-        name: "",
-        type: "tuple[]",
-        internalType: "struct VotingFactory.AllVotes[]",
-        components: [
-          { name: "voteAddress", type: "address", internalType: "address" },
-          { name: "scope", type: "string", internalType: "string" },
-        ],
-      },
-    ],
+    outputs: [{ name: "voteAddress", type: "address[]", internalType: "address[]" }],
     stateMutability: "view",
   },
   {
