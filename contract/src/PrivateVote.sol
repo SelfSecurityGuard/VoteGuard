@@ -9,15 +9,37 @@ import {Formatter} from "@selfxyz/contracts/contracts/libraries/Formatter.sol";
 import {CircuitAttributeHandler} from "@selfxyz/contracts/contracts/libraries/CircuitAttributeHandler.sol";
 import {CircuitConstants} from "@selfxyz/contracts/contracts/constants/CircuitConstants.sol";
 
-contract PrivateVote {
+contract PrivateVote is SelfVerificationRoot {
     address public admin;
     bool public isVotingOpen;
 
     string[] public options;
     mapping(string => uint256) public votesReceived;
-    mapping(address => bool) public hasVoted;
+    mapping(uint256 => bool) internal _nullifiers;
 
-    constructor(string[] memory _options, address _admin) {
+    constructor(
+        string[] memory _options,
+        address _admin,
+        address _identityVerificationHub,
+        uint256 _scope,
+        uint256 _attestationId,
+        bool _olderThanEnabled,
+        uint256 _olderThan,
+        bool _forbiddenCountriesEnabled,
+        uint256[4] memory _forbiddenCountriesListPacked,
+        bool[3] memory _ofacEnabled
+    )
+        SelfVerificationRoot(
+            _identityVerificationHub,
+            _scope,
+            _attestationId,
+            _olderThanEnabled,
+            _olderThan,
+            _forbiddenCountriesEnabled,
+            _forbiddenCountriesListPacked,
+            _ofacEnabled
+        )
+    {
         admin = _admin;
         options = _options;
     }
@@ -40,11 +62,27 @@ contract PrivateVote {
         isVotingOpen = false;
     }
 
-    function vote(string calldata option) external votingOpen {
-        require(!hasVoted[msg.sender], "Already voted");
+    function vote(string calldata option, IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof calldata proof)
+        external
+        votingOpen
+    {
         require(validOption(option), "Invalid option");
 
-        hasVoted[msg.sender] = true;
+        IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub
+            .verifyVcAndDisclose(
+            IIdentityVerificationHubV1.VcAndDiscloseHubProof({
+                olderThanEnabled: _verificationConfig.olderThanEnabled,
+                olderThan: _verificationConfig.olderThan,
+                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
+                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
+                ofacEnabled: _verificationConfig.ofacEnabled,
+                vcAndDiscloseProof: proof
+            })
+        );
+
+        require(!_nullifiers[result.nullifier], "Already voted");
+        _nullifiers[result.nullifier] = true;
+
         votesReceived[option]++;
     }
 
