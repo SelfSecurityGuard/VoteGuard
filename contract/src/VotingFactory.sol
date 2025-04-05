@@ -8,8 +8,32 @@ contract VotingFactory {
 
     address[] public allVotes;
 
-    function createVote(string[] memory options) external returns (address) {
-        PrivateVote vote = new PrivateVote(options, msg.sender);
+    constructor() {}
+
+    function createVote(
+        string memory title,
+        string memory description,
+        uint256 endTime,
+        string[] memory options,
+        SelfVerificationConfig memory config
+    ) external returns (address) {
+        PrivateVote vote = new PrivateVote(
+            title,
+            description,
+            endTime,
+            options,
+            msg.sender,
+            SelfVerificationConfig(
+                config.identityVerificationHub,
+                config.scope,
+                config.attestationId,
+                config.olderThanEnabled,
+                config.olderThan,
+                config.forbiddenCountriesEnabled,
+                config.forbiddenCountriesListPacked,
+                config.ofacEnabled
+            )
+        );
         allVotes.push(address(vote));
         emit VoteCreated(msg.sender, address(vote));
         return address(vote);
