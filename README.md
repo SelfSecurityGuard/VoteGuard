@@ -54,4 +54,6 @@ npm run dev
 ### `GET /api/proof?address=0x...`
 - Retrieves the stored proof for the address (single-use only)
 
-
+## Contract Address: 
+### Celo Mainnet: 0xEB7429486D14629E46EC38bc0489d365b8192f65
+### Celo Alfajores: 0x359105Cc4Cb4F14Ba2e329d8FcA43F516988f24B
