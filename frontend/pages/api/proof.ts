@@ -18,6 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const userId = await getUserIdentifier(publicSignals)
     console.log("Extracted userId:", userId)
     console.log(proof)
+    proof.pubSignals = publicSignals
 
     await redis.set(userId.toLowerCase().replaceAll('-', ''), proof, { ex: 300 })
     // proofStore[userId.toLowerCase().replaceAll('-', '')] = proof
