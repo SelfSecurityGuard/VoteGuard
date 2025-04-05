@@ -59,6 +59,7 @@ contract VotingFactoryTest is Test {
             "Test Description", // _description
             block.timestamp + 1 days,
             options,
+            "Test Scope", // _scope
             config
         );
 
@@ -88,6 +89,7 @@ contract VotingFactoryTest is Test {
             "Test Description", // _description
             block.timestamp + 1 days,
             options,
+            "Test Scope", // _scope
             SelfVerificationConfig({
                 identityVerificationHub: address(mockHub),
                 scope: 123,
@@ -105,6 +107,7 @@ contract VotingFactoryTest is Test {
             "Test Description", // _description
             block.timestamp + 1 days,
             options,
+            "Test Scope", // _scope
             SelfVerificationConfig({
                 identityVerificationHub: address(mockHub),
                 scope: 123,

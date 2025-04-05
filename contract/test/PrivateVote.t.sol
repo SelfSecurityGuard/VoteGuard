@@ -62,6 +62,7 @@ contract PrivateVoteTest is Test {
             "Test Description", // _description
             block.timestamp + 1 days, // _endTime
             options, // _options
+            "Test Scope", // _scope
             admin, // _admin
             config
         );

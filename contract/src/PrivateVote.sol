@@ -29,6 +29,7 @@ contract PrivateVote is SelfVerificationRoot {
     string public description;
     uint256 public endTime;
     uint256 public totalVotes;
+    string public originalScope;
     mapping(string => uint256) public votesReceived;
     mapping(uint256 => bool) internal _nullifiers;
 
@@ -39,6 +40,7 @@ contract PrivateVote is SelfVerificationRoot {
         string memory _description,
         uint256 _endTime,
         string[] memory _options,
+        string memory _originalScope,
         address _admin,
         SelfVerificationConfig memory _config
     )
@@ -58,6 +60,7 @@ contract PrivateVote is SelfVerificationRoot {
         title = _title;
         description = _description;
         endTime = _endTime;
+        originalScope = _originalScope;
         isVotingOpen = true;
     }
 
@@ -113,6 +116,7 @@ contract PrivateVote is SelfVerificationRoot {
         _nullifiers[result.nullifier] = true;
 
         votesReceived[option]++;
+        totalVotes++;
     }
 
     function validOption(string memory name) public view returns (bool) {
@@ -162,5 +166,9 @@ contract PrivateVote is SelfVerificationRoot {
 
     function getCreator() external view returns (address) {
         return admin;
+    }
+
+    function getScope() external view returns (string memory) {
+        return originalScope;
     }
 }
