@@ -30,8 +30,8 @@ interface Poll {
   country: string
 }
 
-export default function PollPage({ params }: { params: { voteAddress: string } }) {
-  const voteAddress = `0x${params.voteAddress}`
+export default function PollPage({ params }: { params: Promise<{ voteAddress: string }> }) {
+  const { voteAddress } = use(params)
   const { address, isConnected } = useWallet()
   const [poll, setPoll] = useState<Poll | null>(null)
   const [proof, setProof] = useState(null)
@@ -111,7 +111,7 @@ export default function PollPage({ params }: { params: { voteAddress: string } }
 
     try {
       setIsSubmitting(true)
-      await castVote(voteAddress, selectedOption, proof)
+      await castVote(`0x${voteAddress}`, selectedOption, proof)
 
       toast({
         title: "Vote cast successfully!",
@@ -121,7 +121,7 @@ export default function PollPage({ params }: { params: { voteAddress: string } }
       setHasVoted(true)
 
       // Refresh poll data
-      const updatedPoll = await getPoll(voteAddress)
+      const updatedPoll = await getPoll(`0x${voteAddress}`)
       setPoll(updatedPoll)
     } catch (error) {
       console.error("Error casting vote:", error)
