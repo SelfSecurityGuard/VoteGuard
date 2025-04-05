@@ -26,8 +26,8 @@ export default function CreatePoll() {
   const [endDate, setEndDate] = useState<Date | undefined>(undefined)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const [requireName, setRequireName] = useState(false)
   const [requireNationality, setRequireNationality] = useState(false)
+  const [requiredNationality, setRequiredNationality] = useState("")
   const [requireAge, setRequireAge] = useState(false)
   const [minimumAge, setMinimumAge] = useState(18)
 
@@ -82,9 +82,8 @@ export default function CreatePoll() {
       const endTimestamp = Math.floor(endDate.getTime() / 1000)
 
       const eligibilityRequirements = {
-        name: requireName,
-        nationality: requireNationality,
-        age: requireAge ? minimumAge : null,
+        age: requireAge ? minimumAge : 0,
+        nationality: requireNationality ? requiredNationality : '',
       }
 
       const scope = `${title}-${Date.now()}`.slice(0, 25)
@@ -101,7 +100,16 @@ export default function CreatePoll() {
         ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
       }
 
-      const voteAddress = await createVote(title, description, endTimestamp, options, scope, config)
+      const voteAddress = await createVote(
+        title,
+        description,
+        endTimestamp,
+        options,
+        scope,
+        eligibilityRequirements.age,
+        eligibilityRequirements.nationality,
+        config
+      )
 
       toast({
         title: "Poll created!",
@@ -208,28 +216,34 @@ export default function CreatePoll() {
                 <Label className="text-base font-medium">Eligibility Requirements</Label>
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="requireName"
-                  checked={requireName}
-                  onChange={(e) => setRequireName(e.target.checked)}
-                  className="rounded border-primary/20 text-primary focus:ring-primary"
-                />
-                <Label htmlFor="requireName">Require Name</Label>
+
+              {/* Nationality Requirement */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="checkbox"
+                    id="requireNationality"
+                    checked={requireNationality}
+                    onChange={(e) => setRequireNationality(e.target.checked)}
+                    className="rounded border-primary/20 text-primary focus:ring-primary"
+                  />
+                  <Label htmlFor="requireNationality">Require Nationality</Label>
+                </div>
+                {requireNationality && (
+                  <div className="ml-6 space-y-1">
+                    <Label htmlFor="nationalityInput">Nationality (e.g., TW, US, JP)</Label>
+                    <Input
+                      id="nationalityInput"
+                      placeholder="Enter required nationality"
+                      value={requiredNationality}
+                      onChange={(e) => setRequiredNationality(e.target.value.toUpperCase())}
+                      className="border-primary/20 bg-primary/5 focus:border-primary/50"
+                    />
+                  </div>
+                )}
               </div>
 
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="requireNationality"
-                  checked={requireNationality}
-                  onChange={(e) => setRequireNationality(e.target.checked)}
-                  className="rounded border-primary/20 text-primary focus:ring-primary"
-                />
-                <Label htmlFor="requireNationality">Require Nationality</Label>
-              </div>
-
+              {/* Age Requirement */}
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <input
@@ -253,7 +267,7 @@ export default function CreatePoll() {
                       max="120"
                       className="w-20 border-primary/20 bg-primary/5 focus:border-primary/50"
                     />
-                    <Label htmlFor="minimumAge">years</Label>
+                    <Label htmlFor="minimumAge">years old</Label>
                   </div>
                 )}
               </div>
