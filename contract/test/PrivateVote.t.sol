@@ -5,6 +5,28 @@ import "forge-std/Test.sol";
 import "../src/PrivateVote.sol";
 import {IVcAndDiscloseCircuitVerifier} from "@selfxyz/contracts/contracts/interfaces/IVcAndDiscloseCircuitVerifier.sol";
 
+contract MockPrivateVote is PrivateVote {
+    constructor(
+        string memory _title,
+        string memory _description,
+        uint256 _endTime,
+        string[] memory _options,
+        string memory _originalScope,
+        uint32 _age,
+        string memory _country,
+        address _admin,
+        SelfVerificationConfig memory _config
+    ) PrivateVote(_title, _description, _endTime, _options, _originalScope, _age, _country, _admin, _config) {}
+
+    function _isAgeVerified(uint256[3] memory) public view virtual override returns (bool) {
+        return true;
+    }
+
+    function _isCountryVerified(uint256[3] memory) public view virtual override returns (bool) {
+        return true;
+    }
+}
+
 contract MockHub {
     uint256 public nullifier;
 
@@ -57,12 +79,14 @@ contract PrivateVoteTest is Test {
         });
 
         vm.prank(admin);
-        privateVote = new PrivateVote(
+        privateVote = new MockPrivateVote(
             "Test Title", // _title
             "Test Description", // _description
             block.timestamp + 1 days, // _endTime
             options, // _options
             "Test Scope", // _scope
+            18, // _age
+            "Taiwan", // _country
             admin, // _admin
             config
         );

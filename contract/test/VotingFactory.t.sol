@@ -60,6 +60,8 @@ contract VotingFactoryTest is Test {
             block.timestamp + 1 days,
             options,
             "Test Scope", // _scope
+            18, // _age
+            "Taiwan", // _country
             config
         );
 
@@ -90,6 +92,8 @@ contract VotingFactoryTest is Test {
             block.timestamp + 1 days,
             options,
             "Test Scope", // _scope
+            18, // _age
+            "Taiwan", // _country
             SelfVerificationConfig({
                 identityVerificationHub: address(mockHub),
                 scope: 123,
@@ -108,6 +112,8 @@ contract VotingFactoryTest is Test {
             block.timestamp + 1 days,
             options,
             "Test Scope", // _scope
+            18, // _age
+            "Taiwan", // _country
             SelfVerificationConfig({
                 identityVerificationHub: address(mockHub),
                 scope: 123,

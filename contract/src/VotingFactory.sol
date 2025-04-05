@@ -16,6 +16,8 @@ contract VotingFactory {
         uint256 endTime,
         string[] memory options,
         string memory scope,
+        uint32 age,
+        string memory country,
         SelfVerificationConfig memory config
     ) external returns (address) {
         PrivateVote vote = new PrivateVote(
@@ -24,6 +26,8 @@ contract VotingFactory {
             endTime,
             options,
             scope,
+            age,
+            country,
             msg.sender,
             SelfVerificationConfig(
                 config.identityVerificationHub,
