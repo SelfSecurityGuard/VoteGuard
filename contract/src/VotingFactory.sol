@@ -6,12 +6,7 @@ import "./PrivateVote.sol";
 contract VotingFactory {
     event VoteCreated(address indexed creator, address voteAddress);
 
-    struct AllVotes {
-        address voteAddress;
-        string scope;
-    }
-
-    AllVotes[] public allVotes;
+    address[] public allVotes;
 
     constructor() {}
 
@@ -28,6 +23,7 @@ contract VotingFactory {
             description,
             endTime,
             options,
+            scope,
             msg.sender,
             SelfVerificationConfig(
                 config.identityVerificationHub,
@@ -40,12 +36,12 @@ contract VotingFactory {
                 config.ofacEnabled
             )
         );
-        allVotes.push(AllVotes(address(vote), scope));
+        allVotes.push(address(vote));
         emit VoteCreated(msg.sender, address(vote));
         return address(vote);
     }
 
-    function getAllVotes() external view returns (AllVotes[] memory) {
+    function getAllVotes() external view returns (address[] memory) {
         return allVotes;
     }
 }
