@@ -31,11 +31,11 @@ export default function CreatePoll() {
   const [requireAge, setRequireAge] = useState(false)
   const [minimumAge, setMinimumAge] = useState(18)
 
-  const backendEndpoint = 'https://vote-guard.vercel.app/api/proof'
+  const backendEndpoint = 'https://vote-guard.vercel.app'
   // testnet
-  const identityVerificationHub = "0xD961B67B35739cCF16326B087C9aD2c0095cCc4E"
+  const identityVerificationHub = "0x3e2487a250e2A7b56c7ef5307Fb591Cc8C83623D"
   // mainnet
-  // const identityVerificationHub = "0x77117D60eaB7C044e785D68edB6C7E0e134970Ea"
+  // const identityVerificationHub = "0xD961B67B35739cCF16326B087C9aD2c0095cCc4E"
 
   const addOption = () => {
     setOptions([...options, ""])

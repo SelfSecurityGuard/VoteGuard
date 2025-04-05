@@ -46,8 +46,11 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
       scope: poll?.scope || "Default scope",
       endpoint: backendEndpoint,
       endpointType: "https",
-      userId: address ?? "0x77117D60eaB7C044e785D68edB6C7E0e134970Ea",
+      userId: address ?? "0x0000000000000000000000000000000000000000",
       userIdType: "hex",
+      disclosures: {
+        date_of_birth: true,
+      }
     }).build()
   }, [poll, address])
 
