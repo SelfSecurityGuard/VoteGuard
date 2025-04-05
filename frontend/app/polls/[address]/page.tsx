@@ -65,7 +65,9 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
       try {
         setLoading(true)
         const pollData = await getPoll(`0x${voteAddress}`)
-        if (!pollData) goHome()
+
+        console.log(pollData, voteAddress)
+        // if (!pollData) goHome()
         setPoll(pollData)
 
         // Check if user has voted
