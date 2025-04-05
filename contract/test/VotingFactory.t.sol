@@ -1,9 +1,20 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.20;
+pragma solidity 0.8.28;
 
 import "forge-std/Test.sol";
 import "../src/VotingFactory.sol";
 import "../src/PrivateVote.sol";
+
+struct VerificationConfig {
+    address identityVerificationHub;
+    uint256 scope;
+    uint256 attestationId;
+    bool olderThanEnabled;
+    uint256 olderThan;
+    bool forbiddenCountriesEnabled;
+    uint256[4] forbiddenCountriesListPacked;
+    bool[3] ofacEnabled;
+}
 
 contract MockHub {
     function verifyVcAndDisclose(IIdentityVerificationHubV1.VcAndDiscloseHubProof calldata)
@@ -31,17 +42,24 @@ contract VotingFactoryTest is Test {
     function testCreateVote() public {
         vm.prank(admin);
 
+        SelfVerificationConfig memory config = SelfVerificationConfig({
+            identityVerificationHub: address(mockHub),
+            scope: 123,
+            attestationId: 456,
+            olderThanEnabled: false,
+            olderThan: 0,
+            forbiddenCountriesEnabled: false,
+            forbiddenCountriesListPacked: [uint256(0), 0, 0, 0],
+            ofacEnabled: [false, false, false]
+        });
+
         // Call createVote with mock parameters
         address voteAddress = votingFactory.createVote(
+            "Test Title", // _title
+            "Test Description", // _description
+            block.timestamp + 1 days,
             options,
-            address(mockHub),
-            123, // scope
-            456, // attestationId
-            false, // olderThanEnabled
-            0, // olderThan
-            false, // forbiddenCountriesEnabled
-            [uint256(0), 0, 0, 0], // forbiddenCountriesListPacked
-            [false, false, false] // ofacEnabled
+            config
         );
 
         // Check that the vote contract was created
@@ -66,11 +84,37 @@ contract VotingFactoryTest is Test {
 
         // Create multiple votes
         votingFactory.createVote(
-            options, address(mockHub), 123, 456, false, 0, false, [uint256(0), 0, 0, 0], [false, false, false]
+            "Test Title", // _title
+            "Test Description", // _description
+            block.timestamp + 1 days,
+            options,
+            SelfVerificationConfig({
+                identityVerificationHub: address(mockHub),
+                scope: 123,
+                attestationId: 456,
+                olderThanEnabled: false,
+                olderThan: 0,
+                forbiddenCountriesEnabled: false,
+                forbiddenCountriesListPacked: [uint256(0), 0, 0, 0],
+                ofacEnabled: [false, false, false]
+            })
         );
 
         votingFactory.createVote(
-            options, address(mockHub), 123, 456, false, 0, false, [uint256(0), 0, 0, 0], [false, false, false]
+            "Test Title", // _title
+            "Test Description", // _description
+            block.timestamp + 1 days,
+            options,
+            SelfVerificationConfig({
+                identityVerificationHub: address(mockHub),
+                scope: 123,
+                attestationId: 456,
+                olderThanEnabled: false,
+                olderThan: 0,
+                forbiddenCountriesEnabled: false,
+                forbiddenCountriesListPacked: [uint256(0), 0, 0, 0],
+                ofacEnabled: [false, false, false]
+            })
         );
 
         // Check that multiple votes are stored
