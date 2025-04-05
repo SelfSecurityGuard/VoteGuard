@@ -1,6 +1,6 @@
 "use client"
 
-import { use, useEffect, useState } from "react"
+import { use, useEffect, useMemo, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
@@ -13,6 +13,7 @@ import { CheckCircle2, AlertCircle, Clock, User, BarChart3, ArrowLeft } from "lu
 import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode'
 
 interface Poll {
   address: string
@@ -36,6 +37,19 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
+
+  const backendEndpoint = 'https://block-vote-ten.vercel.app/api/proof'
+
+  const selfApp = useMemo(() => {
+    return new SelfAppBuilder({
+      appName: poll?.title || "My App",
+      scope: poll?.scope || "Default scope",
+      endpoint: backendEndpoint,
+      endpointType: "https",
+      userId: address ?? "0x77117D60eaB7C044e785D68edB6C7E0e134970Ea",
+      userIdType: "hex",
+    }).build()
+  }, [poll, address])
 
   const goHome = () => {
     router.push('/')
@@ -254,6 +268,19 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
             </div>
           )}
         </CardContent>
+        {!hasVoted && isPollActive && selfApp && (
+          <div className="my-3 flex justify-center">
+            <SelfQRcodeWrapper
+              selfApp={selfApp}
+              onSuccess={() => {
+                toast({
+                  title: "✅ Identity Verified",
+                  description: "You may now cast your vote.",
+                })
+              }}
+            />
+          </div>
+        )}
         {!hasVoted && isPollActive && (
           <CardFooter className="border-t border-primary/10">
             <Button
