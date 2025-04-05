@@ -149,7 +149,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       vote.getCreator(),
     ])
 
-    const votes = await vote.getVotes(options)
+    const votes = options.map(async (option: string) => await vote.getVotes(option))
 
     console.log({
       address: voteAddress,
