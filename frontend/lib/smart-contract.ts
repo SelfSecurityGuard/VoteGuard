@@ -188,7 +188,7 @@ export const FACTORY_ABI = [
   },
 ]
 
-export const FACTORY_ADDRESS = "0x62428676202D8EEE48B67cfc04193e431D892A9d"
+export const FACTORY_ADDRESS = "0xA1c8a9a0fFE0B1B71d54FcFdAEe7ae54db080bbf"
 
 export const VOTE_ABI = [
   {
