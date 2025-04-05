@@ -1,15 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity 0.8.28;
 
-import {SelfVerificationRoot} from "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
-import {ISelfVerificationRoot} from "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol";
-import {IVcAndDiscloseCircuitVerifier} from "@selfxyz/contracts/contracts/interfaces/IVcAndDiscloseCircuitVerifier.sol";
-import {IIdentityVerificationHubV1} from "@selfxyz/contracts/contracts/interfaces/IIdentityVerificationHubV1.sol";
-import {Formatter} from "@selfxyz/contracts/contracts/libraries/Formatter.sol";
-import {CircuitAttributeHandler} from "@selfxyz/contracts/contracts/libraries/CircuitAttributeHandler.sol";
-import {CircuitConstants} from "@selfxyz/contracts/contracts/constants/CircuitConstants.sol";
+import "forge-std/Test.sol";
+import "../src/VotingFactory.sol";
+import "../src/PrivateVote.sol";
 
-struct SelfVerificationConfig {
+struct VerificationConfig {
     address identityVerificationHub;
     uint256 scope;
     uint256 attestationId;
@@ -20,152 +16,120 @@ struct SelfVerificationConfig {
     bool[3] ofacEnabled;
 }
 
-contract PrivateVote is SelfVerificationRoot {
-    address public admin;
-    bool public isVotingOpen;
-
-    string[] public options;
-    string public title;
-    string public description;
-    uint256 public endTime;
-    uint256 public totalVotes;
-    mapping(string => uint256) public votesReceived;
-    mapping(uint256 => bool) internal _nullifiers;
-
-    error RegisteredNullifier();
-
-    constructor(
-        string memory _title,
-        string memory _description,
-        uint256 _endTime,
-        string[] memory _options,
-        address _admin,
-        SelfVerificationConfig memory _config
-    )
-        SelfVerificationRoot(
-            _config.identityVerificationHub,
-            _config.scope,
-            _config.attestationId,
-            _config.olderThanEnabled,
-            _config.olderThan,
-            _config.forbiddenCountriesEnabled,
-            _config.forbiddenCountriesListPacked,
-            _config.ofacEnabled
-        )
-    {
-        admin = _admin;
-        options = _options;
-        title = _title;
-        description = _description;
-        endTime = _endTime;
-        isVotingOpen = true;
-    }
-
-    modifier onlyAdmin() {
-        require(msg.sender == admin, "Only admin");
-        _;
-    }
-
-    modifier votingOpen() {
-        require(isVotingOpen, "Voting is not open");
-        require(block.timestamp < endTime, "Voting has ended");
-        _;
-    }
-
-    function startVoting() external onlyAdmin {
-        isVotingOpen = true;
-    }
-
-    function endVoting() external onlyAdmin {
-        isVotingOpen = false;
-    }
-
-    function vote(string calldata option, IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof calldata proof)
+contract MockHub {
+    function verifyVcAndDisclose(IIdentityVerificationHubV1.VcAndDiscloseHubProof calldata)
         external
-        votingOpen
+        pure
+        returns (IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result)
     {
-        require(validOption(option), "Invalid option");
+        result.nullifier = 0; // Mock implementation
+    }
+}
 
-        if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
-            revert InvalidScope();
+contract VotingFactoryTest is Test {
+    VotingFactory votingFactory;
+    MockHub mockHub;
+    address admin = address(0x1);
+
+    string[] options = ["Alice", "Bob", "Charlie"];
+
+    function setUp() public {
+        mockHub = new MockHub();
+        vm.prank(admin); // Simulate admin deploying the contract
+        votingFactory = new VotingFactory();
+    }
+
+    function testCreateVote() public {
+        vm.prank(admin);
+
+        SelfVerificationConfig memory config = SelfVerificationConfig({
+            identityVerificationHub: address(mockHub),
+            scope: 123,
+            attestationId: 456,
+            olderThanEnabled: false,
+            olderThan: 0,
+            forbiddenCountriesEnabled: false,
+            forbiddenCountriesListPacked: [uint256(0), 0, 0, 0],
+            ofacEnabled: [false, false, false]
+        });
+
+        // Call createVote with mock parameters
+        address voteAddress = votingFactory.createVote(
+            "Test Title", // _title
+            "Test Description", // _description
+            block.timestamp + 1 days,
+            options,
+            "Test Scope", // _scope
+            config
+        );
+
+        // Check that the vote contract was created
+        assertTrue(voteAddress != address(0), "Vote contract address should not be zero");
+
+        // Check that the vote contract is stored in the factory
+        VotingFactory.AllVotes[] memory allVotesStructs = votingFactory.getAllVotes();
+        address[] memory allVotes = new address[](allVotesStructs.length);
+        for (uint256 i = 0; i < allVotesStructs.length; i++) {
+            allVotes[i] = allVotesStructs[i].voteAddress;
         }
+        assertEq(allVotes.length, 1, "There should be one vote contract");
+        assertEq(allVotes[0], voteAddress, "Stored vote address mismatch");
 
-        if (_attestationId != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
-            revert InvalidAttestationId();
+        // Check that the created contract is a PrivateVote instance
+        PrivateVote privateVote = PrivateVote(voteAddress);
+        string[] memory allOptions = privateVote.getAllOptions();
+        assertEq(allOptions.length, options.length, "Option count mismatch");
+        for (uint256 i = 0; i < options.length; i++) {
+            assertEq(allOptions[i], options[i], "Option mismatch");
         }
+    }
 
-        if (_nullifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]]) {
-            revert RegisteredNullifier();
-        }
+    function testMultipleVotes() public {
+        vm.prank(admin);
 
-        IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub
-            .verifyVcAndDisclose(
-            IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: _verificationConfig.olderThanEnabled,
-                olderThan: _verificationConfig.olderThan,
-                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
-                ofacEnabled: _verificationConfig.ofacEnabled,
-                vcAndDiscloseProof: proof
+        // Create multiple votes
+        votingFactory.createVote(
+            "Test Title", // _title
+            "Test Description", // _description
+            block.timestamp + 1 days,
+            options,
+            "Test Scope", // _scope
+            SelfVerificationConfig({
+                identityVerificationHub: address(mockHub),
+                scope: 123,
+                attestationId: 456,
+                olderThanEnabled: false,
+                olderThan: 0,
+                forbiddenCountriesEnabled: false,
+                forbiddenCountriesListPacked: [uint256(0), 0, 0, 0],
+                ofacEnabled: [false, false, false]
             })
         );
 
-        _nullifiers[result.nullifier] = true;
+        votingFactory.createVote(
+            "Test Title", // _title
+            "Test Description", // _description
+            block.timestamp + 1 days,
+            options,
+            "Test Scope", // _scope
+            SelfVerificationConfig({
+                identityVerificationHub: address(mockHub),
+                scope: 123,
+                attestationId: 456,
+                olderThanEnabled: false,
+                olderThan: 0,
+                forbiddenCountriesEnabled: false,
+                forbiddenCountriesListPacked: [uint256(0), 0, 0, 0],
+                ofacEnabled: [false, false, false]
+            })
+        );
 
-        votesReceived[option]++;
-        totalVotes++;
-    }
-
-    function validOption(string memory name) public view returns (bool) {
-        for (uint256 i = 0; i < options.length; i++) {
-            if (keccak256(bytes(options[i])) == keccak256(bytes(name))) {
-                return true;
-            }
+        // Check that multiple votes are stored
+        VotingFactory.AllVotes[] memory allVotesStructs = votingFactory.getAllVotes();
+        address[] memory allVotes = new address[](allVotesStructs.length);
+        for (uint256 i = 0; i < allVotesStructs.length; i++) {
+            allVotes[i] = allVotesStructs[i].voteAddress;
         }
-        return false;
-    }
-
-    function getVotes(string memory option) external view returns (uint256) {
-        return votesReceived[option];
-    }
-
-    function getWinner() external view returns (string memory winner) {
-        uint256 maxVotes = 0;
-        winner = "";
-
-        for (uint256 i = 0; i < options.length; i++) {
-            if (votesReceived[options[i]] > maxVotes) {
-                maxVotes = votesReceived[options[i]];
-                winner = options[i];
-            }
-        }
-    }
-
-    function getAllOptions() external view returns (string[] memory) {
-        return options;
-    }
-
-    function getTitle() external view returns (string memory) {
-        return title;
-    }
-
-    function getDescription() external view returns (string memory) {
-        return description;
-    }
-
-    function getEndTime() external view returns (uint256) {
-        return endTime;
-    }
-
-    function getTotalVotes() external view returns (uint256) {
-        return totalVotes;
-    }
-
-    function getCreator() external view returns (address) {
-        return admin;
-    }
-
-    function getScope() external view returns (uint256) {
-        return _scope;
+        assertEq(allVotes.length, 2, "There should be two vote contracts");
     }
 }

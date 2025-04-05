@@ -6,7 +6,12 @@ import "./PrivateVote.sol";
 contract VotingFactory {
     event VoteCreated(address indexed creator, address voteAddress);
 
-    address[] public allVotes;
+    struct AllVotes {
+        address voteAddress;
+        string scope;
+    }
+
+    AllVotes[] public allVotes;
 
     constructor() {}
 
@@ -15,6 +20,7 @@ contract VotingFactory {
         string memory description,
         uint256 endTime,
         string[] memory options,
+        string memory scope,
         SelfVerificationConfig memory config
     ) external returns (address) {
         PrivateVote vote = new PrivateVote(
@@ -34,12 +40,12 @@ contract VotingFactory {
                 config.ofacEnabled
             )
         );
-        allVotes.push(address(vote));
+        allVotes.push(AllVotes(address(vote), scope));
         emit VoteCreated(msg.sender, address(vote));
         return address(vote);
     }
 
-    function getAllVotes() external view returns (address[] memory) {
+    function getAllVotes() external view returns (AllVotes[] memory) {
         return allVotes;
     }
 }
