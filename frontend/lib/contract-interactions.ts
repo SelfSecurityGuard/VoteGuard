@@ -6,6 +6,7 @@ import { FACTORY_ABI, FACTORY_ADDRESS, VOTE_ABI } from "./smart-contract"
 interface Poll {
   address: string
   title: string
+  scope: string
   description: string
   options: string[]
   votes: number[]
@@ -132,6 +133,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
     const vote = new ethers.Contract(voteAddress, VOTE_ABI, provider)
     const [
       title,
+      scope,
       description,
       options,
       totalVotes,
@@ -139,6 +141,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       creator
     ] = await Promise.all([
       vote.getTitle(),
+      vote.getScope(),
       vote.getDescription(),
       vote.getAllOptions(),
       vote.getTotalVotes(),
@@ -146,7 +149,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       vote.getCreator(),
     ])
 
-    const votes = vote.getVotes(options)
+    const votes = options.map(async (option: string) => await vote.getVotes(option))
 
     console.log({
       address: voteAddress,
@@ -160,6 +163,7 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
     })
     return {
       address: voteAddress,
+      scope,
       title,
       description,
       options,
@@ -196,16 +200,44 @@ export async function createPoll(
   return "0x" + Math.random().toString(16).substring(2, 42)
 }
 
-// Mock function to cast a vote
-export async function castVote(pollId: string, optionIndex: number): Promise<string> {
-  // Simulate API delay and blockchain transaction
-  await new Promise((resolve) => setTimeout(resolve, 1500))
+function getMockProof(): any {
+  return {
+    a: [0, 0],
+    b: [
+      [0, 0],
+      [0, 0]
+    ],
+    c: [0, 0],
+    pubSignals: Array(21).fill(0)
+  }
+}
 
-  // In a real implementation, this would interact with a smart contract
-  console.log("Casting vote:", { pollId, optionIndex })
+export async function castVote(voteAddress: string, optionIndex: number): Promise<string> {
+  if (!window.ethereum) throw new Error("請先安裝錢包擴充功能")
 
-  // Return a mock transaction hash
-  return "0x" + Math.random().toString(16).substring(2, 42)
+  let accounts = await window.ethereum.request({ method: "eth_accounts" })
+  if (accounts.length === 0) {
+    // When the user cancels authorization, an error will be thrown here
+    accounts = await window.ethereum.request({ method: "eth_requestAccounts" })
+  }
+
+  const provider = new ethers.BrowserProvider(window.ethereum)
+  const signer = await provider.getSigner()
+
+  const voteContract = new ethers.Contract(voteAddress, VOTE_ABI, signer)
+
+  // 取得投票選項（合約端是 string[]）
+  const options: string[] = await voteContract.getAllOptions()
+  const option = options[optionIndex]
+  if (!option) throw new Error("選項不存在")
+
+  const mockProof = getMockProof()
+
+  // 呼叫 vote 方法
+  const tx = await voteContract.vote(option, mockProof)
+  const receipt = await tx.wait()
+
+  return receipt.hash
 }
 
 export interface SelfVerificationConfig {

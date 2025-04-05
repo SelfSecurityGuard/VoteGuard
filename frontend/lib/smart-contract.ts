@@ -196,6 +196,7 @@ export const VOTE_ABI = [
       { name: "_description", type: "string" },
       { name: "_endTime", type: "uint256" },
       { name: "_options", type: "string[]" },
+      { name: "_originalScope", type: "string" },
       { name: "_admin", type: "address" },
       {
         name: "_config",
@@ -230,6 +231,8 @@ export const VOTE_ABI = [
   { type: "function", name: "endVoting", inputs: [], outputs: [], stateMutability: "nonpayable" },
   { type: "function", name: "admin", inputs: [], outputs: [{ type: "address" }], stateMutability: "view" },
   { type: "function", name: "totalVotes", inputs: [], outputs: [{ type: "uint256" }], stateMutability: "view" },
+  { type: "function", name: "getScope", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
+  { type: "function", name: "originalScope", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
   {
     type: "function",
     name: "verifySelfProof",
