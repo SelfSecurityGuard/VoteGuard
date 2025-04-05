@@ -31,7 +31,7 @@ export default function CreatePoll() {
   const [requireAge, setRequireAge] = useState(false)
   const [minimumAge, setMinimumAge] = useState(18)
 
-  const backendEndpoint = 'https://VoteGuard-backend.vercel.app/proof'
+  const backendEndpoint = 'https://vote-guard.vercel.app/api/proof'
   // testnet
   const identityVerificationHub = "0xD961B67B35739cCF16326B087C9aD2c0095cCc4E"
   // mainnet
