@@ -13,6 +13,8 @@ interface Poll {
   totalVotes: number
   endTime: number
   creator: string
+  age: number
+  country: string
 }
 
 interface MockPoll {
@@ -138,7 +140,9 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       options,
       totalVotes,
       endTime,
-      creator
+      creator,
+      age,
+      country,
     ] = await Promise.all([
       vote.getTitle(),
       vote.getScope(),
@@ -147,6 +151,8 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       vote.getTotalVotes(),
       vote.getEndTime(),
       vote.getCreator(),
+      vote.getAge(),
+      vote.getCountry(),
     ])
 
     const votes = options.map(async (option: string) => await vote.getVotes(option))
@@ -159,7 +165,9 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       votes,
       totalVotes,
       endTime,
-      creator
+      creator,
+      age,
+      country
     })
     return {
       address: voteAddress,
@@ -170,7 +178,9 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       votes,
       totalVotes,
       endTime,
-      creator
+      creator,
+      age,
+      country
     } satisfies Poll
   } catch (err) {
     console.warn(`❌ Unable to read contract ${voteAddress}：`, err)

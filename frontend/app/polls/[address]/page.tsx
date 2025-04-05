@@ -26,6 +26,8 @@ interface Poll {
   totalVotes: number
   endTime: number
   creator: string
+  age: number
+  country: string
 }
 
 export default function PollPage({ params }: { params: Promise<{ voteAddress: string }> }) {
@@ -51,7 +53,8 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
       userId: address ?? "0x0000000000000000000000000000000000000000",
       userIdType: "hex",
       disclosures: {
-        date_of_birth: true,
+        date_of_birth: poll?.age === 0 ? false : true,
+        nationality: poll?.country === "" ? false : true,
       }
     }).build()
   }, [poll, address])
