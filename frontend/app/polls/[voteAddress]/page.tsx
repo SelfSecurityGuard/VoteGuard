@@ -280,6 +280,7 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
           <div className="my-3 flex justify-center">
             <SelfQRcodeWrapper
               selfApp={selfApp}
+              size={200}
               onSuccess={async () => {
                 const res = await axios.get(`/api/proof?address=${selfApp.userId}`)
                 setProof(res.data.proof)
