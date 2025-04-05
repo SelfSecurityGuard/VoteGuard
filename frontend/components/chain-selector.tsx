@@ -7,6 +7,8 @@ import { Network, Check } from "lucide-react"
 
 // Define supported blockchain networks
 const networks = [
+  { id: 42220, name: "Celo", icon: "celo.svg" },
+  { id: 44787, name: "Celo Alfajores", icon: "celoalfajores.svg" },
   { id: 1, name: "Ethereum", icon: "ethereum.svg" },
   { id: 137, name: "Polygon", icon: "polygon.svg" },
   { id: 42161, name: "Arbitrum", icon: "arbitrum.svg" },
