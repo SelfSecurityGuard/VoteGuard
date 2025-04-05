@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import SelfQRcodeWrapper, { SelfAppBuilder } from '@selfxyz/qrcode'
+import axios from "axios"
 
 interface Poll {
   address: string
@@ -25,12 +26,15 @@ interface Poll {
   totalVotes: number
   endTime: number
   creator: string
+  age: number
+  country: string
 }
 
 export default function PollPage({ params }: { params: Promise<{ voteAddress: string }> }) {
   const { voteAddress } = use(params)
   const { address, isConnected } = useWallet()
   const [poll, setPoll] = useState<Poll | null>(null)
+  const [proof, setProof] = useState(null)
   const [selectedOption, setSelectedOption] = useState<number | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
@@ -49,7 +53,8 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
       userId: address ?? "0x0000000000000000000000000000000000000000",
       userIdType: "hex",
       disclosures: {
-        date_of_birth: true,
+        date_of_birth: poll?.age === 0 ? false : true,
+        nationality: poll?.country === "" ? false : true,
       }
     }).build()
   }, [poll, address])
@@ -65,9 +70,7 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
       try {
         setLoading(true)
         const pollData = await getPoll(`0x${voteAddress}`)
-
-        console.log(pollData, voteAddress)
-        // if (!pollData) goHome()
+        if (!pollData) goHome()
         setPoll(pollData)
 
         // Check if user has voted
@@ -108,7 +111,7 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
 
     try {
       setIsSubmitting(true)
-      await castVote(voteAddress, selectedOption)
+      await castVote(voteAddress, selectedOption, proof)
 
       toast({
         title: "Vote cast successfully!",
@@ -277,7 +280,9 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
           <div className="my-3 flex justify-center">
             <SelfQRcodeWrapper
               selfApp={selfApp}
-              onSuccess={() => {
+              onSuccess={async () => {
+                const res = await axios.get(`/api/proof?address=${selfApp.userId}`)
+                setProof(res.data.proof)
                 toast({
                   title: "✅ Identity Verified",
                   description: "You may now cast your vote.",

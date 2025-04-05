@@ -22,7 +22,7 @@ function HeaderContent() {
         <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center">
           <div className="h-4 w-4 rounded-full bg-primary"></div>
         </div>
-        <span className="font-bold text-gradient">BlockVote</span>
+        <span className="font-bold text-gradient">VoteGuard</span>
       </div>
       <div className="flex items-center gap-3">
         <ChainSelector />

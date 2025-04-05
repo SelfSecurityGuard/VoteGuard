@@ -13,6 +13,8 @@ interface Poll {
   totalVotes: number
   endTime: number
   creator: string
+  age: number
+  country: string
 }
 
 interface MockPoll {
@@ -138,7 +140,9 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       options,
       totalVotes,
       endTime,
-      creator
+      creator,
+      age,
+      country,
     ] = await Promise.all([
       vote.getTitle(),
       vote.getScope(),
@@ -147,6 +151,8 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       vote.getTotalVotes(),
       vote.getEndTime(),
       vote.getCreator(),
+      vote.getAge(),
+      vote.getCountry(),
     ])
 
     const votes = options.map(async (option: string) => await vote.getVotes(option))
@@ -159,7 +165,9 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       votes,
       totalVotes,
       endTime,
-      creator
+      creator,
+      age,
+      country
     })
     return {
       address: voteAddress,
@@ -170,7 +178,9 @@ export async function getPoll(voteAddress: string): Promise<Poll | null> {
       votes,
       totalVotes,
       endTime,
-      creator
+      creator,
+      age,
+      country
     } satisfies Poll
   } catch (err) {
     console.warn(`❌ Unable to read contract ${voteAddress}：`, err)
@@ -212,8 +222,8 @@ function getMockProof(): any {
   }
 }
 
-export async function castVote(voteAddress: string, optionIndex: number): Promise<string> {
-  if (!window.ethereum) throw new Error("請先安裝錢包擴充功能")
+export async function castVote(voteAddress: string, optionIndex: number, proof: any): Promise<string> {
+  if (!window.ethereum) throw new Error("Please install the wallet extension first")
 
   let accounts = await window.ethereum.request({ method: "eth_accounts" })
   if (accounts.length === 0) {
@@ -226,15 +236,11 @@ export async function castVote(voteAddress: string, optionIndex: number): Promis
 
   const voteContract = new ethers.Contract(voteAddress, VOTE_ABI, signer)
 
-  // 取得投票選項（合約端是 string[]）
   const options: string[] = await voteContract.getAllOptions()
   const option = options[optionIndex]
-  if (!option) throw new Error("選項不存在")
+  if (!option) throw new Error("Option does not exist")
 
-  const mockProof = getMockProof()
-
-  // 呼叫 vote 方法
-  const tx = await voteContract.vote(option, mockProof)
+  const tx = await voteContract.vote(option, proof)
   const receipt = await tx.wait()
 
   return receipt.hash
@@ -257,6 +263,8 @@ export async function createVote(
   endTime: number,
   options: string[],
   scope: string,
+  age: number,
+  country: string,
   config: SelfVerificationConfig
 ): Promise<string> {
   if (!window.ethereum) throw new Error("Please install the wallet expansion package first")
@@ -275,7 +283,16 @@ export async function createVote(
 
     console.log("📤 Sending createVote transaction...", options)
 
-    const tx = await contract.createVote(title, description, endTime, options, scope, config)
+    const tx = await contract.createVote(
+      title,
+      description,
+      endTime,
+      options,
+      scope,
+      age,
+      country,
+      config
+    )
     const receipt = await tx.wait()
 
     const event = receipt.logs.find(
