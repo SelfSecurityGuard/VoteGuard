@@ -113,6 +113,7 @@ contract PrivateVote is SelfVerificationRoot {
         _nullifiers[result.nullifier] = true;
 
         votesReceived[option]++;
+        totalVotes++;
     }
 
     function validOption(string memory name) public view returns (bool) {
@@ -162,5 +163,9 @@ contract PrivateVote is SelfVerificationRoot {
 
     function getCreator() external view returns (address) {
         return admin;
+    }
+
+    function getScope() external view returns (uint256) {
+        return _scope;
     }
 }
