@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: UNLICENSED
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
 import {SelfVerificationRoot} from "@selfxyz/contracts/contracts/abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "@selfxyz/contracts/contracts/interfaces/ISelfVerificationRoot.sol";
@@ -17,8 +17,8 @@ contract PrivateVote {
     mapping(string => uint256) public votesReceived;
     mapping(address => bool) public hasVoted;
 
-    constructor(string[] memory _options) {
-        admin = msg.sender;
+    constructor(string[] memory _options, address _admin) {
+        admin = _admin;
         options = _options;
     }
 

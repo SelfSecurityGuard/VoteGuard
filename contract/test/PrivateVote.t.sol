@@ -14,7 +14,7 @@ contract PrivateVoteTest is Test {
 
     function setUp() public {
         vm.prank(admin); // Simulate admin deploying the contract
-        privateVote = new PrivateVote(options);
+        privateVote = new PrivateVote(options, admin);
     }
 
     function testAdminCanStartAndEndVoting() public {
@@ -82,7 +82,7 @@ contract PrivateVoteTest is Test {
         assertEq(privateVote.getWinner(), "Alice", "Alice should be the winner");
     }
 
-    function testGetAllOptions() public {
+    function testGetAllOptions() public view {
         string[] memory allOptions = privateVote.getAllOptions();
         assertEq(allOptions.length, options.length, "Option count mismatch");
 

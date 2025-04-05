@@ -13,7 +13,11 @@ contract DeployPrivateVote is Script {
         candidates[1] = "Bob";
         candidates[2] = "Charlie";
 
-        PrivateVote vote = new PrivateVote(candidates);
+        PrivateVote vote = new PrivateVote(candidates, address(this));
+
+        vote.startVoting();
+        vote.vote("Alice");
+        vote.endVoting();
 
         vm.stopBroadcast();
     }
