@@ -137,7 +137,7 @@ export const FACTORY_ABI = [
     type: "function",
     name: "allVotes",
     inputs: [{ name: "", type: "uint256", internalType: "uint256" }],
-    outputs: [{ name: "voteAddress", type: "address[]", internalType: "address[]" }],
+    outputs: [{ name: "", type: "address", internalType: "address" }],
     stateMutability: "view",
   },
   {
@@ -149,6 +149,8 @@ export const FACTORY_ABI = [
       { name: "endTime", type: "uint256", internalType: "uint256" },
       { name: "options", type: "string[]", internalType: "string[]" },
       { name: "scope", type: "string", internalType: "string" },
+      { name: "age", type: "uint32", internalType: "uint32" },
+      { name: "country", type: "string", internalType: "string" },
       {
         name: "config",
         type: "tuple",
@@ -172,7 +174,7 @@ export const FACTORY_ABI = [
     type: "function",
     name: "getAllVotes",
     inputs: [],
-    outputs: [{ name: "voteAddress", type: "address[]", internalType: "address[]" }],
+    outputs: [{ name: "", type: "address[]", internalType: "address[]" }],
     stateMutability: "view",
   },
   {
@@ -192,28 +194,29 @@ export const VOTE_ABI = [
   {
     type: "constructor",
     inputs: [
-      { name: "_title", type: "string" },
-      { name: "_description", type: "string" },
-      { name: "_endTime", type: "uint256" },
-      { name: "_options", type: "string[]" },
-      { name: "_originalScope", type: "string" },
-      { name: "_admin", type: "address" },
+      { name: "_title", type: "string", internalType: "string" },
+      { name: "_description", type: "string", internalType: "string" },
+      { name: "_endTime", type: "uint256", internalType: "uint256" },
+      { name: "_options", type: "string[]", internalType: "string[]" },
+      { name: "_originalScope", type: "string", internalType: "string" },
+      { name: "_admin", type: "address", internalType: "address" },
       {
         name: "_config",
         type: "tuple",
+        internalType: "struct SelfVerificationConfig",
         components: [
-          { name: "identityVerificationHub", type: "address" },
-          { name: "scope", type: "uint256" },
-          { name: "attestationId", type: "uint256" },
-          { name: "olderThanEnabled", type: "bool" },
-          { name: "olderThan", type: "uint256" },
-          { name: "forbiddenCountriesEnabled", type: "bool" },
-          { name: "forbiddenCountriesListPacked", type: "uint256[4]" },
-          { name: "ofacEnabled", type: "bool[3]" },
-        ]
-      }
+          { name: "identityVerificationHub", type: "address", internalType: "address" },
+          { name: "scope", type: "uint256", internalType: "uint256" },
+          { name: "attestationId", type: "uint256", internalType: "uint256" },
+          { name: "olderThanEnabled", type: "bool", internalType: "bool" },
+          { name: "olderThan", type: "uint256", internalType: "uint256" },
+          { name: "forbiddenCountriesEnabled", type: "bool", internalType: "bool" },
+          { name: "forbiddenCountriesListPacked", type: "uint256[4]", internalType: "uint256[4]" },
+          { name: "ofacEnabled", type: "bool[3]", internalType: "bool[3]" },
+        ],
+      },
     ],
-    stateMutability: "nonpayable"
+    stateMutability: "nonpayable",
   },
   { type: "function", name: "title", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
   { type: "function", name: "description", inputs: [], outputs: [{ type: "string" }], stateMutability: "view" },
@@ -240,44 +243,59 @@ export const VOTE_ABI = [
       {
         name: "proof",
         type: "tuple",
+        internalType: "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",
         components: [
-          { name: "a", type: "uint256[2]" },
-          { name: "b", type: "uint256[2][2]" },
-          { name: "c", type: "uint256[2]" },
-          { name: "pubSignals", type: "uint256[21]" }
-        ]
-      }
+          { name: "a", type: "uint256[2]", internalType: "uint256[2]" },
+          { name: "b", type: "uint256[2][2]", internalType: "uint256[2][2]" },
+          { name: "c", type: "uint256[2]", internalType: "uint256[2]" },
+          { name: "pubSignals", type: "uint256[21]", internalType: "uint256[21]" },
+        ],
+      },
     ],
     outputs: [],
-    stateMutability: "nonpayable"
+    stateMutability: "nonpayable",
   },
   {
     type: "function",
     name: "vote",
     inputs: [
-      { name: "option", type: "string" },
+      { name: "option", type: "string", internalType: "string" },
       {
         name: "proof",
         type: "tuple",
+        internalType: "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",
         components: [
-          { name: "a", type: "uint256[2]" },
-          { name: "b", type: "uint256[2][2]" },
-          { name: "c", type: "uint256[2]" },
-          { name: "pubSignals", type: "uint256[21]" }
-        ]
-      }
+          { name: "a", type: "uint256[2]", internalType: "uint256[2]" },
+          { name: "b", type: "uint256[2][2]", internalType: "uint256[2][2]" },
+          { name: "c", type: "uint256[2]", internalType: "uint256[2]" },
+          { name: "pubSignals", type: "uint256[21]", internalType: "uint256[21]" },
+        ],
+      },
     ],
     outputs: [],
-    stateMutability: "nonpayable"
+    stateMutability: "nonpayable",
+  },
+  {
+    type: "function",
+    name: "stringToUint",
+    inputs: [{ name: "s", type: "string" }],
+    outputs: [{ type: "uint256" }],
+    stateMutability: "pure",
   },
   {
     type: "function",
     name: "votesReceived",
     inputs: [{ name: "", type: "string" }],
     outputs: [{ type: "uint256" }],
-    stateMutability: "view"
+    stateMutability: "view",
   },
+  { type: "error", name: "INSUFFICIENT_CHARCODE_LEN", inputs: [] },
   { type: "error", name: "InvalidAttestationId", inputs: [] },
+  { type: "error", name: "InvalidDateLength", inputs: [] },
+  { type: "error", name: "InvalidDayRange", inputs: [] },
+  { type: "error", name: "InvalidFieldElement", inputs: [] },
+  { type: "error", name: "InvalidMonthRange", inputs: [] },
   { type: "error", name: "InvalidScope", inputs: [] },
-  { type: "error", name: "RegisteredNullifier", inputs: [] }
+  { type: "error", name: "InvalidYearRange", inputs: [] },
+  { type: "error", name: "RegisteredNullifier", inputs: [] },
 ]
