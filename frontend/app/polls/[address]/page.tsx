@@ -30,8 +30,8 @@ interface Poll {
   country: string
 }
 
-export default function PollPage({ params }: { params: { voteAddress: string } }) {
-  const voteAddress = `0x${params.voteAddress}`
+export default function PollPage({ params }: { params: { address: string } }) {
+  const voteAddress = `0x${params.address}`
   const { address, isConnected } = useWallet()
   const [poll, setPoll] = useState<Poll | null>(null)
   const [proof, setProof] = useState(null)
