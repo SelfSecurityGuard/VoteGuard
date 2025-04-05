@@ -4,6 +4,17 @@ import { ethers, Log } from "ethers"
 import { FACTORY_ABI, FACTORY_ADDRESS, VOTE_ABI } from "./smart-contract"
 
 interface Poll {
+  address: string
+  title: string
+  description: string
+  options: string[]
+  votes: number[]
+  totalVotes: number
+  endTime: number
+  creator: string
+}
+
+interface MockPoll {
   id: string
   title: string
   description: string
@@ -23,7 +34,7 @@ interface ActivePoll {
 }
 
 // Mock data
-const mockPolls: Poll[] = [
+const mockPolls: MockPoll[] = [
   {
     id: "1",
     title: "Should we implement feature X?",
@@ -70,10 +81,10 @@ export async function getActivePolls(): Promise<ActivePoll[]> {
 
   const provider = new ethers.BrowserProvider(window.ethereum)
   const factory = new ethers.Contract(FACTORY_ADDRESS, FACTORY_ABI, provider)
-  const votes: string[] = await factory.getAllVotes()
+  const voteAddresses: string[] = await factory.getAllVotes()
 
   const polls = await Promise.all(
-    votes.map(async ({ "0": address, "1": scope }) => {
+    voteAddresses.map(async (address) => {
       try {
         const vote = new ethers.Contract(address, VOTE_ABI, provider)
         const [
@@ -111,16 +122,56 @@ export async function getActivePolls(): Promise<ActivePoll[]> {
 }
 
 // Mock function to get a specific poll
-export async function getPoll(id: string): Promise<Poll> {
+export async function getPoll(voteAddress: string): Promise<Poll | null> {
   // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 800))
+  if (!window.ethereum) throw new Error("Please install the wallet expansion package first.")
 
-  const poll = mockPolls.find((p) => p.id === id)
-  if (!poll) {
-    throw new Error("Poll not found")
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum)
+
+    const vote = new ethers.Contract(voteAddress, VOTE_ABI, provider)
+    const [
+      title,
+      description,
+      options,
+      totalVotes,
+      endTime,
+      creator
+    ] = await Promise.all([
+      vote.getTitle(),
+      vote.getDescription(),
+      vote.getAllOptions(),
+      vote.getTotalVotes(),
+      vote.getEndTime(),
+      vote.getCreator(),
+    ])
+
+    const votes = vote.getVotes(options)
+
+    console.log({
+      address: voteAddress,
+      title,
+      description,
+      options,
+      votes,
+      totalVotes,
+      endTime,
+      creator
+    })
+    return {
+      address: voteAddress,
+      title,
+      description,
+      options,
+      votes,
+      totalVotes,
+      endTime,
+      creator
+    } satisfies Poll
+  } catch (err) {
+    console.warn(`❌ Unable to read contract ${voteAddress}：`, err)
+    return null
   }
-
-  return poll
 }
 
 // Update the createPoll function signature to include eligibility requirements

@@ -115,7 +115,7 @@ export default function ActivePolls() {
             </CardContent>
             <CardFooter>
               <Button asChild className="w-full bg-primary hover:bg-primary/90">
-                <Link href={`/polls/${poll.id}`}>View Poll</Link>
+                <Link href={`/polls/${poll.address.replace('0x', '')}`}>View Poll</Link>
               </Button>
             </CardFooter>
           </Card>
