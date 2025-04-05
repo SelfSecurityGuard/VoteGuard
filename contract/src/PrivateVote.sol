@@ -30,6 +30,8 @@ contract PrivateVote is SelfVerificationRoot {
     uint256 public endTime;
     uint256 public totalVotes;
     string public originalScope;
+    uint32 private age;
+    string private country;
     mapping(string => uint256) public votesReceived;
     mapping(uint256 => bool) internal _nullifiers;
 
@@ -41,6 +43,8 @@ contract PrivateVote is SelfVerificationRoot {
         uint256 _endTime,
         string[] memory _options,
         string memory _originalScope,
+        uint32 _age,
+        string memory _country,
         address _admin,
         SelfVerificationConfig memory _config
     )
@@ -61,6 +65,8 @@ contract PrivateVote is SelfVerificationRoot {
         description = _description;
         endTime = _endTime;
         originalScope = _originalScope;
+        age = _age;
+        country = _country;
         isVotingOpen = true;
     }
 
@@ -113,10 +119,32 @@ contract PrivateVote is SelfVerificationRoot {
             })
         );
 
-        _nullifiers[result.nullifier] = true;
+        if (_isAgeVerified(result.revealedDataPacked) && _isCountryVerified(result.revealedDataPacked)) {
+            _nullifiers[result.nullifier] = true;
 
-        votesReceived[option]++;
-        totalVotes++;
+            votesReceived[option]++;
+            totalVotes++;
+        } else {
+            revert("Identity verification failed");
+        }
+    }
+
+    function _isAgeVerified(uint256[3] memory revealedDataPacked) public view virtual returns (bool) {
+        bytes memory charcodes = Formatter.fieldElementsToBytes(revealedDataPacked);
+        string memory dob = CircuitAttributeHandler.getDateOfBirth(charcodes);
+        uint256 dobTimestamp = Formatter.dateToUnixTimestamp(dob);
+
+        uint256 secondsPerYear = 365 days;
+        uint256 ageFromTimestamp = (block.timestamp - dobTimestamp) / secondsPerYear;
+
+        return ageFromTimestamp >= age;
+    }
+
+    function _isCountryVerified(uint256[3] memory revealedDataPacked) public view virtual returns (bool) {
+        bytes memory charcodes = Formatter.fieldElementsToBytes(revealedDataPacked);
+        string memory nationality = CircuitAttributeHandler.getNationality(charcodes);
+
+        return keccak256(bytes(country)) == keccak256(bytes(nationality));
     }
 
     function validOption(string memory name) public view returns (bool) {
@@ -126,6 +154,16 @@ contract PrivateVote is SelfVerificationRoot {
             }
         }
         return false;
+    }
+
+    function stringToUint(string memory s) public pure returns (uint256) {
+        bytes memory b = bytes(s);
+        uint256 result = 0;
+        for (uint256 i = 0; i < b.length; i++) {
+            require(b[i] >= 0x30 && b[i] <= 0x39, "Invalid character in string");
+            result = result * 10 + (uint256(uint8(b[i])) - 48);
+        }
+        return result;
     }
 
     function getVotes(string memory option) external view returns (uint256) {
