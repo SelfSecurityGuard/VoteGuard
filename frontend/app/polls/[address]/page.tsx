@@ -88,7 +88,7 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
 
     try {
       setIsSubmitting(true)
-      await castVote(id, selectedOption)
+      await castVote(voteAddress, selectedOption)
 
       toast({
         title: "Vote cast successfully!",
@@ -98,7 +98,7 @@ export default function PollPage({ params }: { params: Promise<{ voteAddress: st
       setHasVoted(true)
 
       // Refresh poll data
-      const updatedPoll = await getPoll(id)
+      const updatedPoll = await getPoll(voteAddress)
       setPoll(updatedPoll)
     } catch (error) {
       console.error("Error casting vote:", error)
