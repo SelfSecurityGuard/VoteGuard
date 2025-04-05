@@ -2,22 +2,17 @@
 pragma solidity ^0.8.20;
 
 import "forge-std/Script.sol";
-import "../src/PrivateVote.sol";
+import "../src/VotingFactory.sol";
 
-contract DeployPrivateVote is Script {
+contract DeployVotingFactory is Script {
     function run() external {
         vm.startBroadcast();
 
-        string[] memory candidates = new string[](3);
-        candidates[0] = "Alice";
-        candidates[1] = "Bob";
-        candidates[2] = "Charlie";
+        // Deploy the VotingFactory contract
+        VotingFactory votingFactory = new VotingFactory();
 
-        PrivateVote vote = new PrivateVote(candidates, address(this));
-
-        vote.startVoting();
-        vote.vote("Alice");
-        vote.endVoting();
+        // Log the deployed contract address
+        console.log("VotingFactory deployed at:", address(votingFactory));
 
         vm.stopBroadcast();
     }
