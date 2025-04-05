@@ -130,6 +130,9 @@ contract PrivateVote is SelfVerificationRoot {
     }
 
     function _isAgeVerified(uint256[3] memory revealedDataPacked) public view virtual returns (bool) {
+        if (age == 0) {
+            return true;
+        }
         bytes memory charcodes = Formatter.fieldElementsToBytes(revealedDataPacked);
         string memory dob = CircuitAttributeHandler.getDateOfBirth(charcodes);
         uint256 dobTimestamp = Formatter.dateToUnixTimestamp(dob);
@@ -141,6 +144,9 @@ contract PrivateVote is SelfVerificationRoot {
     }
 
     function _isCountryVerified(uint256[3] memory revealedDataPacked) public view virtual returns (bool) {
+        if (keccak256(bytes(country)) == keccak256(bytes(""))) {
+            return true;
+        }
         bytes memory charcodes = Formatter.fieldElementsToBytes(revealedDataPacked);
         string memory nationality = CircuitAttributeHandler.getNationality(charcodes);
 
@@ -208,5 +214,13 @@ contract PrivateVote is SelfVerificationRoot {
 
     function getScope() external view returns (string memory) {
         return originalScope;
+    }
+
+    function getAge() external view returns (uint32) {
+        return age;
+    }
+
+    function getCountry() external view returns (string memory) {
+        return country;
     }
 }
