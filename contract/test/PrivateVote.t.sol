@@ -10,11 +10,11 @@ contract PrivateVoteTest is Test {
     address voter1 = address(0x2);
     address voter2 = address(0x3);
 
-    string[] candidates = ["Alice", "Bob", "Charlie"];
+    string[] options = ["Alice", "Bob", "Charlie"];
 
     function setUp() public {
         vm.prank(admin); // Simulate admin deploying the contract
-        privateVote = new PrivateVote(candidates);
+        privateVote = new PrivateVote(options);
     }
 
     function testAdminCanStartAndEndVoting() public {
@@ -60,13 +60,13 @@ contract PrivateVoteTest is Test {
         privateVote.vote("Alice");
     }
 
-    function testCannotVoteForInvalidCandidate() public {
+    function testCannotVoteForInvalidOption() public {
         vm.prank(admin);
         privateVote.startVoting();
 
-        vm.expectRevert("Invalid candidate");
+        vm.expectRevert("Invalid option");
         vm.prank(voter1);
-        privateVote.vote("InvalidCandidate");
+        privateVote.vote("InvalidOption");
     }
 
     function testGetWinner() public {
@@ -82,12 +82,12 @@ contract PrivateVoteTest is Test {
         assertEq(privateVote.getWinner(), "Alice", "Alice should be the winner");
     }
 
-    function testGetAllCandidates() public {
-        string[] memory allCandidates = privateVote.getAllCandidates();
-        assertEq(allCandidates.length, candidates.length, "Candidate count mismatch");
+    function testGetAllOptions() public {
+        string[] memory allOptions = privateVote.getAllOptions();
+        assertEq(allOptions.length, options.length, "Option count mismatch");
 
-        for (uint256 i = 0; i < candidates.length; i++) {
-            assertEq(allCandidates[i], candidates[i], "Candidate mismatch");
+        for (uint256 i = 0; i < options.length; i++) {
+            assertEq(allOptions[i], options[i], "Option mismatch");
         }
     }
 }
